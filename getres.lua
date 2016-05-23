@@ -1,8 +1,12 @@
 require "nn"
 
-function getres(modelcap)
+function getresmodel(modelcap,scale)
 	local rtm=nn.ConcatTable()
 	rtm:add(modelcap)
-	rtm:add(nn.Identity())
+	if not scale then
+		rtm:add(nn.Identity())
+	else
+		rtm:add(nn.Sequential():add(nn.Identity()):add(nn.MulConstant(scale,true)))
+	end
 	return nn.Sequential():add(rtm):add(nn.CAddTable())
 end
