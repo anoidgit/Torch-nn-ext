@@ -49,21 +49,21 @@ opt.hiddensize = loadstring(" return "..opt.hiddensize)()
 opt.schedule = loadstring(" return "..opt.schedule)()
 opt.inputsize = opt.inputsize == -1 and opt.hiddensize[1] or opt.inputsize
 if not opt.silent then
-   table.print(opt)
+	table.print(opt)
 end
 opt.id = opt.id == '' and ('ptb' .. ':' .. dl.uniqueid()) or opt.id
 
 if opt.cuda then
-   require 'cunn'
-   cutorch.setDevice(opt.device)
+	require 'cunn'
+	cutorch.setDevice(opt.device)
 end
 
 --[[ data set ]]--
 
 local trainset, validset, testset = dl.loadPTB({opt.batchsize,1,1})
 if not opt.silent then 
-   print("Vocabulary size : "..#trainset.ivocab) 
-   print("Train set split into "..opt.batchsize.." sequences of length "..trainset:size())
+	print("Vocabulary size : "..#trainset.ivocab) 
+	print("Train set split into "..opt.batchsize.." sequences of length "..trainset:size())
 end
 
 --[[ language model ]]--
@@ -75,7 +75,7 @@ local lookup = nn.LookupTable(#trainset.ivocab, opt.inputsize)
 lookup.maxnormout = -1 -- prevent weird maxnormout behaviour
 lm:add(lookup) -- input is seqlen x batchsize
 if opt.dropout > 0 and not opt.gru then  -- gru has a dropout option
-   lm:add(nn.Dropout(opt.dropout))
+	lm:add(nn.Dropout(opt.dropout))
 end
 lm:add(nn.SplitTable(1)) -- tensor to table of tensors
 
@@ -83,31 +83,31 @@ lm:add(nn.SplitTable(1)) -- tensor to table of tensors
 local stepmodule = nn.Sequential() -- applied at each time-step
 local inputsize = opt.inputsize
 for i,hiddensize in ipairs(opt.hiddensize) do 
-   local rnn
-   
-   if opt.gru then -- Gated Recurrent Units
-      rnn = nn.GRU(inputsize, hiddensize, nil, opt.dropout/2)
-   elseif opt.lstm then -- Long Short Term Memory units
-      require 'nngraph'
-      nn.FastLSTM.usenngraph = true -- faster
-      rnn = nn.FastLSTM(inputsize, hiddensize)
-   else -- simple recurrent neural network
-      local rm =  nn.Sequential() -- input is {x[t], h[t-1]}
-         :add(nn.ParallelTable()
-            :add(i==1 and nn.Identity() or nn.Linear(inputsize, hiddensize)) -- input layer
-            :add(nn.Linear(hiddensize, hiddensize))) -- recurrent layer
-         :add(nn.CAddTable()) -- merge
-         :add(nn.Sigmoid()) -- transfer
-      rnn = nn.Recurrence(rm, hiddensize, 1)
-   end
+	local rnn
+	
+	if opt.gru then -- Gated Recurrent Units
+		rnn = nn.GRU(inputsize, hiddensize, nil, opt.dropout/2)
+	elseif opt.lstm then -- Long Short Term Memory units
+		require 'nngraph'
+		nn.FastLSTM.usenngraph = true -- faster
+		rnn = nn.FastLSTM(inputsize, hiddensize)
+	else -- simple recurrent neural network
+		local rm =  nn.Sequential() -- input is {x[t], h[t-1]}
+			:add(nn.ParallelTable()
+				:add(i==1 and nn.Identity() or nn.Linear(inputsize, hiddensize)) -- input layer
+				:add(nn.Linear(hiddensize, hiddensize))) -- recurrent layer
+			:add(nn.CAddTable()) -- merge
+			:add(nn.Sigmoid()) -- transfer
+		rnn = nn.Recurrence(rm, hiddensize, 1)
+	end
 
-   stepmodule:add(rnn)
-   
-   if opt.dropout > 0 then
-      stepmodule:add(nn.Dropout(opt.dropout))
-   end
-   
-   inputsize = hiddensize
+	stepmodule:add(rnn)
+	
+	if opt.dropout > 0 then
+		stepmodule:add(nn.Dropout(opt.dropout))
+	end
+	
+	inputsize = hiddensize
 end
 
 -- output layer
@@ -121,14 +121,14 @@ lm:add(nn.Sequencer(stepmodule))
 lm:remember((opt.lstm or opt.gru) and 'both' or 'eval')
 
 if not opt.silent then
-   print"Language Model:"
-   print(lm)
+	print"Language Model:"
+	print(lm)
 end
 
 if opt.uniform > 0 then
-   for k,param in ipairs(lm:parameters()) do
-      param:uniform(-opt.uniform, opt.uniform)
-   end
+	for k,param in ipairs(lm:parameters()) do
+		param:uniform(-opt.uniform, opt.uniform)
+	end
 end
 
 --[[ loss function ]]--
@@ -138,9 +138,9 @@ local crit = nn.ClassNLLCriterion()
 -- target is also seqlen x batchsize.
 local targetmodule = nn.SplitTable(1)
 if opt.cuda then
-   targetmodule = nn.Sequential()
-      :add(nn.Convert())
-      :add(targetmodule)
+	targetmodule = nn.Sequential()
+		:add(nn.Convert())
+		:add(targetmodule)
 end
  
 local criterion = nn.SequencerCriterion(crit)
@@ -148,9 +148,9 @@ local criterion = nn.SequencerCriterion(crit)
 --[[ CUDA ]]--
 
 if opt.cuda then
-   lm:cuda()
-   criterion:cuda()
-   targetmodule:cuda()
+	lm:cuda()
+	criterion:cuda()
+	targetmodule:cuda()
 end
 
 --[[ experiment log ]]--
@@ -179,108 +179,108 @@ opt.lr = opt.startlr
 opt.trainsize = opt.trainsize == -1 and trainset:size() or opt.trainsize
 opt.validsize = opt.validsize == -1 and validset:size() or opt.validsize
 while opt.maxepoch <= 0 or epoch <= opt.maxepoch do
-   print("")
-   print("Epoch #"..epoch.." :")
+	print("")
+	print("Epoch #"..epoch.." :")
 
-   -- 1. training
-   
-   local a = torch.Timer()
-   lm:training()
-   local sumErr = 0
-   for i, inputs, targets in trainset:subiter(opt.seqlen, opt.trainsize) do
-      targets = targetmodule:forward(targets)
-      
-      -- forward
-      local outputs = lm:forward(inputs)
-      local err = criterion:forward(outputs, targets)
-      sumErr = sumErr + err
-      
-      -- backward 
-      local gradOutputs = criterion:backward(outputs, targets)
-      lm:zeroGradParameters()
-      lm:backward(inputs, gradOutputs)
-      
-      -- update
-      if opt.cutoff > 0 then
-         local norm = lm:gradParamClip(opt.cutoff) -- affects gradParams
-         opt.meanNorm = opt.meanNorm and (opt.meanNorm*0.9 + norm*0.1) or norm
-      end
-      lm:updateGradParameters(opt.momentum) -- affects gradParams
-      lm:updateParameters(opt.lr) -- affects params
-      lm:maxParamNorm(opt.maxnormout) -- affects params
+	-- 1. training
+	
+	local a = torch.Timer()
+	lm:training()
+	local sumErr = 0
+	for i, inputs, targets in trainset:subiter(opt.seqlen, opt.trainsize) do
+		targets = targetmodule:forward(targets)
+		
+		-- forward
+		local outputs = lm:forward(inputs)
+		local err = criterion:forward(outputs, targets)
+		sumErr = sumErr + err
+		
+		-- backward 
+		local gradOutputs = criterion:backward(outputs, targets)
+		lm:zeroGradParameters()
+		lm:backward(inputs, gradOutputs)
+		
+		-- update
+		if opt.cutoff > 0 then
+			local norm = lm:gradParamClip(opt.cutoff) -- affects gradParams
+			opt.meanNorm = opt.meanNorm and (opt.meanNorm*0.9 + norm*0.1) or norm
+		end
+		lm:updateGradParameters(opt.momentum) -- affects gradParams
+		lm:updateParameters(opt.lr) -- affects params
+		lm:maxParamNorm(opt.maxnormout) -- affects params
 
-      if opt.progress then
-         xlua.progress(math.min(i + opt.seqlen, opt.trainsize), opt.trainsize)
-      end
+		if opt.progress then
+			xlua.progress(math.min(i + opt.seqlen, opt.trainsize), opt.trainsize)
+		end
 
-      if i % 1000 == 0 then
-         collectgarbage()
-      end
+		if i % 1000 == 0 then
+			collectgarbage()
+		end
 
-   end
-   
-   -- learning rate decay
-   if opt.schedule then
-      opt.lr = opt.schedule[epoch] or opt.lr
-   else
-      opt.lr = opt.lr + (opt.minlr - opt.startlr)/opt.saturate
-   end
-   opt.lr = math.max(opt.minlr, opt.lr)
-   
-   if not opt.silent then
-      print("learning rate", opt.lr)
-      if opt.meanNorm then
-         print("mean gradParam norm", opt.meanNorm)
-      end
-   end
+	end
+	
+	-- learning rate decay
+	if opt.schedule then
+		opt.lr = opt.schedule[epoch] or opt.lr
+	else
+		opt.lr = opt.lr + (opt.minlr - opt.startlr)/opt.saturate
+	end
+	opt.lr = math.max(opt.minlr, opt.lr)
+	
+	if not opt.silent then
+		print("learning rate", opt.lr)
+		if opt.meanNorm then
+			print("mean gradParam norm", opt.meanNorm)
+		end
+	end
 
-   if cutorch then cutorch.synchronize() end
-   local speed = a:time().real/opt.trainsize
-   print(string.format("Speed : %f sec/batch ", speed))
+	if cutorch then cutorch.synchronize() end
+	local speed = a:time().real/opt.trainsize
+	print(string.format("Speed : %f sec/batch ", speed))
 
-   local ppl = torch.exp(sumErr/opt.trainsize)
-   print("Training PPL : "..ppl)
+	local ppl = torch.exp(sumErr/opt.trainsize)
+	print("Training PPL : "..ppl)
 
-   xplog.trainppl[epoch] = ppl
+	xplog.trainppl[epoch] = ppl
 
-   -- 2. cross-validation
+	-- 2. cross-validation
 
-   lm:evaluate()
-   local sumErr = 0
-   for i, inputs, targets in validset:subiter(opt.seqlen, opt.validsize) do
-      targets = targetmodule:forward(targets)
-      local outputs = lm:forward(inputs)
-      local err = criterion:forward(outputs, targets)
-      sumErr = sumErr + err
-   end
+	lm:evaluate()
+	local sumErr = 0
+	for i, inputs, targets in validset:subiter(opt.seqlen, opt.validsize) do
+		targets = targetmodule:forward(targets)
+		local outputs = lm:forward(inputs)
+		local err = criterion:forward(outputs, targets)
+		sumErr = sumErr + err
+	end
 
-   local ppl = torch.exp(sumErr/opt.validsize)
-   -- Note :
-   -- Perplexity = exp( sum ( NLL ) / #w)
-   -- Bits Per Word = log2(Perplexity)
-   -- Bits per Char = BPW * (#w / #c)
-   print("Validation PPL : "..ppl)
+	local ppl = torch.exp(sumErr/opt.validsize)
+	-- Note :
+	-- Perplexity = exp( sum ( NLL ) / #w)
+	-- Bits Per Word = log2(Perplexity)
+	-- Bits per Char = BPW * (#w / #c)
+	print("Validation PPL : "..ppl)
 
-   xplog.valppl[epoch] = ppl
-   ntrial = ntrial + 1
+	xplog.valppl[epoch] = ppl
+	ntrial = ntrial + 1
 
-   -- early-stopping
-   if ppl < xplog.minvalppl then
-      -- save best version of model
-      xplog.minvalppl = ppl
-      xplog.epoch = epoch 
-      local filename = paths.concat(opt.savepath, opt.id..'.t7')
-      print("Found new minima. Saving to "..filename)
-      torch.save(filename, xplog)
-      ntrial = 0
-   elseif ntrial >= opt.earlystop then
-      print("No new minima found after "..ntrial.." epochs.")
-      print("Stopping experiment.")
-      break
-   end
+	-- early-stopping
+	if ppl < xplog.minvalppl then
+		-- save best version of model
+		xplog.minvalppl = ppl
+		xplog.epoch = epoch 
+		local filename = paths.concat(opt.savepath, opt.id..'.t7')
+		print("Found new minima. Saving to "..filename)
+		torch.save(filename, xplog)
+		ntrial = 0
+	elseif ntrial >= opt.earlystop then
+		print("No new minima found after "..ntrial.." epochs.")
+		print("Stopping experiment.")
+		break
+	end
 
-   collectgarbage()
-   epoch = epoch + 1
+	collectgarbage()
+	epoch = epoch + 1
 end
 print("Evaluate model using : ")
 print("th scripts/evaluate-rnnlm.lua --xplogpath "..paths.concat(opt.savepath, opt.id..'.t7')..(opt.cuda and '--cuda' or ''))
