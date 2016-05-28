@@ -1,6 +1,5 @@
 require 'paths'
 require 'rnn'
-require 'nraFLSTM'
 local dl = require 'dataload'
 
 version = 2
@@ -93,8 +92,8 @@ for i,hiddensize in ipairs(opt.hiddensize) do
 		rnn = nn.nraGRU(inputsize, hiddensize, nil, opt.dropout/2)
 	elseif opt.lstm then -- Long Short Term Memory units
 		require 'nngraph'
-		nn.nraFLSTM.usenngraph = true -- faster
-		rnn = nn.nraFLSTM(inputsize, hiddensize)
+		nn.FastLSTM.usenngraph = true -- faster
+		rnn = nn.FastLSTM(inputsize, hiddensize)
 	else -- simple recurrent neural network
 		local rm =  nn.Sequential() -- input is {x[t], h[t-1]}
 			:add(nn.ParallelTable()
