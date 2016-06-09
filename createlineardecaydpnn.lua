@@ -6,7 +6,7 @@ function createlineardecaydpnn(input,output,step,minfc,transfer)
 	rs=nn.Sequential()
 	while ous>minfc do
 		rs:add(nn.Linear(ins,ous))
-		rs:add(transfer)
+		rs:add(transfer:clone())
 		ins=ous
 		ous=ins-step
 	rs:add(nn.Linear(ous,output))
