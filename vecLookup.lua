@@ -12,7 +12,6 @@ function vecLookup:__init(vecin, paddingValue, maxNorm, normType)
 	self.maxNorm = maxNorm or nil
 	self.normType = normType or nil
 
-	self:reset()
 end
 
 function vecLookup:backCompatibility()
@@ -47,11 +46,6 @@ end
 function vecLookup:scaleGradByFreq()
 	self.shouldScaleGradByFreq = true
 	return self
-end
-
-function vecLookup:reset(stdv)
-	stdv = stdv or 1
-	self.weight:normal(0, stdv)
 end
 
 function vecLookup:makeInputContiguous(input)
