@@ -4,6 +4,7 @@ some extention to torch and nn package
  * [getmaxout](#getmaxout) : Get a maxout module;
  * [getres](#getres) : Get a residue module;
  * [createlineardecaydpnn](#createlineardecaydpnn) : Get a deep neural network, the number of hidden units decay linearly.
+ * [vecLookup](#vecLookup) : LookupTable with initialization matrix;
 
 <a name='getmaxout'></a>
 ### [maxoutmodule] getmaxout(inputsize,outputsize,nlinear) ###
@@ -34,3 +35,11 @@ This function takes 5 arguments:
  * `step` : the output size of the hiddenlayers decay `step` layer by layer.
  * `minfc` : the output size of the hiddenlayers will always larger than `minfc`. when it will decay below `minfc`, the stack process will be stoped, and add a final output layer.
  * `transfer` : a Module that processes the output of the `merge` Module and output a time-step's output of the FastResidueRecurrent Module.
+
+<a name='vecLookup'></a>
+The `nn.vecLookup(vecin, paddingValue, maxNorm, normType)` takes 4 arguments:
+
+ * `vecin` : the initialization vectors, it should be a tensor with size (#vocab*#vector).
+ * `paddingValue` : same with nn.LookupTable.
+ * `maxNorm` : same with nn.LookupTable.
+ * `normType` : same with nn.LookupTable.
