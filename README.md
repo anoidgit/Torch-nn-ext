@@ -37,6 +37,8 @@ This function takes 5 arguments:
  * `transfer` : a Module that processes the output of the `merge` Module and output a time-step's output of the FastResidueRecurrent Module.
 
 <a name='vecLookup'></a>
+### vecLookup ###
+
 The `nn.vecLookup(vecin, paddingValue, maxNorm, normType)` takes 4 arguments:
 
  * `vecin` : the initialization vectors, it should be a tensor with size (#vocab*#vector).
