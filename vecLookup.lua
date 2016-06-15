@@ -1,3 +1,4 @@
+require "nn"
 local THNN = require 'nn.THNN'
 local vecLookup, parent = torch.class('nn.vecLookup', 'nn.Module')
 
@@ -102,7 +103,7 @@ function vecLookup:accGradParameters(input, gradOutput, scale)
 		gradOutput = self._gradOutput
 	end
 
-	self.gradWeight.THNN.vecLookup_accGradParameters(
+	self.gradWeight.THNN.LookupTable_accGradParameters(
 		input:cdata(),
 		gradOutput:cdata(),
 		self.gradWeight:cdata(),
@@ -129,7 +130,7 @@ function vecLookup:renorm(input)
 		error("input must be a vector or matrix")
 	end
 	-- "row_idx" and "weight" will be modified in the C code
-	self.weight.THNN.vecLookup_renorm(
+	self.weight.THNN.LookupTable_renorm(
 		row_idx:cdata(),
 		self.weight:cdata(),
 		self.maxNorm,
