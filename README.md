@@ -5,6 +5,7 @@ some extention to torch and nn package
  * [getresmodel](#getresmodel) : Get a residue module;
  * [createlineardecaydpnn](#createlineardecaydpnn) : Get a deep neural network, the number of hidden units decay linearly.
  * [vecLookup](#vecLookup) : LookupTable with initialization matrix;
+ * [graphmodule](#graphmodule) : generate a module with nngraph, maybe faster;
 
 <a name='getmaxout'></a>
 ### [maxoutmodule] getmaxout(inputsize,outputsize,nlinear) ###
@@ -46,3 +47,10 @@ The `nn.vecLookup(vecin, paddingValue, maxNorm, normType)` takes 4 arguments:
  * `paddingValue` : same with nn.LookupTable.
  * `maxNorm` : same with nn.LookupTable.
  * `normType` : same with nn.LookupTable.
+
+<a name='graphmodule'></a>
+### [graphmodule] graphmodule(module_graph) ###
+Reconstruct `module_graph` with nngraph, try make it faster, but it need some time and may make computation less module like LookupTable worse.
+
+This function takes only 1 arguments:
+ * `module_graph` : the module to rebuild with nngraph.
