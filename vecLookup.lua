@@ -2,7 +2,7 @@ require "nn"
 local THNN = require 'nn.THNN'
 local vecLookup, parent = torch.class('nn.vecLookup', 'nn.Module')
 
-vecLookup.__version = 1
+vecLookup.__version = 4
 
 function vecLookup:__init(vecin, paddingValue, maxNorm, normType)
 	parent.__init(self)
@@ -12,7 +12,6 @@ function vecLookup:__init(vecin, paddingValue, maxNorm, normType)
 	self.paddingValue = paddingValue or 0
 	self.maxNorm = maxNorm or nil
 	self.normType = normType or nil
-
 end
 
 function vecLookup:backCompatibility()
@@ -47,6 +46,11 @@ end
 function vecLookup:scaleGradByFreq()
 	self.shouldScaleGradByFreq = true
 	return self
+end
+
+function vecLookup:reset(stdv)
+	stdv = stdv or 1
+	self.weight:normal(0, stdv)
 end
 
 function vecLookup:makeInputContiguous(input)
