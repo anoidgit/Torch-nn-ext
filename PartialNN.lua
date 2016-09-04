@@ -1,16 +1,16 @@
 local PartialNN, parent = torch.class("nn.PartialNN", "nn.Container")
 
-function PartialNN:__init(module,nPartial)
+function PartialNN:__init(module,nForward)
 	parent.__init(self)
 	self.module = module
-	self.nPartial=nPartial
+	self.nForward=nForward
 end
 
 function PartialNN:updateOutput(input)
 	self.input = input or self.input
 	local ndim = self.input:nDimension()
-	local nkeep = self.input:size(ndim) - self.nPartial
-	self.output = torch.cat(self.module:updateOutput(self.input:narrow(ndim,1,nkeep)),self.input:narrow(ndim,nkeep+1,self.nPartial))
+	self.output = self.input:clone()
+	self.output:narrow(ndim,1,self.nForward):copy(self.module:updateOutput(self.input:narrow(ndim,1,self.nForward)))
 	return self.output
 end
 
@@ -18,8 +18,8 @@ function PartialNN:updateGradInput(input, gradOutput)
 	self.input = input or self.input
 	self.gradOutput = output or self.gradOutput
 	local ndim = self.gradOutput:nDimension()
-	local nkeep = self.gradOutput:size(ndim) - self.nPartial
-	self.gradInput = torch.cat(self.module:updateGradInput(self.gradOutput:narrow(ndim,1,nkeep)),self.gradOutput:narrow(ndim,nkeep+1,self.nPartial))
+	self.gradInput = self.gradOutput:clone()
+	self.gradInput:narrow(ndim,1,self.nForward):copy(self.module:updateGradInput(self.gradOutput:narrow(ndim,1,self.nForward)))
 	return self.gradInput
 end
 
@@ -27,16 +27,14 @@ function PartialNN:accGradParameters(input, gradOutput, scale)
 	self.input = input or self.input
 	self.gradOutput = output or self.gradOutput
 	local ndim = self.gradOutput:nDimension()
-	local nkeep = self.gradOutput:size(ndim) - self.nPartial
-	self.module:accGradParameters(input:narrow(ndim,1,nkeep), gradOutput:narrow(ndim,1,nkeep), scale)
+	self.module:accGradParameters(self.input:narrow(ndim,1,self.nForward), self.gradOutput:narrow(ndim,1,self.nForward), scale)
 end
 
 function PartialNN:accUpdateGradParameters(input, gradOutput, lr)
 	self.input = input or self.input
 	self.gradOutput = output or self.gradOutput
 	local ndim = self.gradOutput:nDimension()
-	local nkeep = self.gradOutput:size(ndim) - self.nPartial
-	self.module:accUpdateGradParameters(input:narrow(ndim,1,nkeep), gradOutput:narrow(ndim,1,nkeep), lr)
+	self.module:accUpdateGradParameters(self.input:narrow(ndim,1,self.nForward), self.gradOutput:narrow(ndim,1,self.nForward), lr)
 end
 
 function PartialNN:sharedAccUpdateGradParameters(input, gradOutput, lr)
@@ -44,7 +42,7 @@ function PartialNN:sharedAccUpdateGradParameters(input, gradOutput, lr)
 	self.gradOutput = output or self.gradOutput
 	local ndim = self.gradOutput:nDimension()
 	local nkeep = self.gradOutput:size(ndim) - self.nPartial
-	self.module:sharedAccUpdateGradParameters(input:narrow(ndim,1,nkeep), gradOutput:narrow(ndim,1,nkeep), lr)
+	self.module:sharedAccUpdateGradParameters(self.input:narrow(ndim,1,self.nForward), self.gradOutput:narrow(ndim,1,self.nForward), lr)
 end
 
 function PartialNN:__tostring__()
