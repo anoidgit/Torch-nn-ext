@@ -59,7 +59,7 @@ This function takes only 1 arguments:
 <a name='PartialNN'></a>
 ### PartialNN ###
 
-The `nn.PartialNN(module, nPartial)` takes 2 arguments:
+The `nn.PartialNN(module, nForward)` was expected to decorate the activation functions whos input size and output size was same, and get a cross-layer neural network, It takes 2 arguments:
 
  * `module` : the module process the input data.
- * `nPartial` : size of the input which was directly copy to the output.
+ * `nForward` : size of the input which was processed by `module`.
