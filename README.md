@@ -6,6 +6,7 @@ some extention to torch and nn package
  * [createlineardecaydpnn](#createlineardecaydpnn) : Get a deep neural network, the number of hidden units decay linearly.
  * [vecLookup](#vecLookup) : LookupTable with initialization matrix;
  * [graphmodule](#graphmodule) : generate a module with nngraph, maybe faster;
+ * [PartialNN](#PartialNN) : decorater a module to a part forward module;
 
 <a name='getmaxout'></a>
 ### [maxoutmodule] getmaxout(inputsize,outputsize,nlinear) ###
@@ -54,3 +55,11 @@ Reconstruct `module_graph` with nngraph, try make it faster, but it need some ti
 
 This function takes only 1 arguments:
  * `module_graph` : the module to rebuild with nngraph.
+
+<a name='PartialNN'></a>
+### PartialNN ###
+
+The `nn.PartialNN(module, nPartial)` takes 2 arguments:
+
+ * `module` : the module process the input data.
+ * `nPartial` : size of the input which was directly copy to the output.
