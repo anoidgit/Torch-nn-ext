@@ -19,7 +19,7 @@ function PartialNN:updateGradInput(input, gradOutput)
 	self.gradOutput = gradOutput or self.gradOutput
 	local ndim = self.gradOutput:nDimension()
 	self.gradInput = self.gradOutput:clone()
-	self.gradInput:narrow(ndim,1,self.nForward):copy(self.module:updateGradInput(self.gradOutput:narrow(ndim,1,self.nForward)))
+	self.gradInput:narrow(ndim,1,self.nForward):copy(self.module:updateGradInput(self.input:narrow(ndim,1,self.nForward),self.gradOutput:narrow(ndim,1,self.nForward)))
 	return self.gradInput
 end
 
