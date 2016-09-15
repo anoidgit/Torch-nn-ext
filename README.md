@@ -42,9 +42,10 @@ This function takes 5 arguments:
 <a name='vecLookup'></a>
 ### vecLookup ###
 
-The `nn.vecLookup(vecin, paddingValue, maxNorm, normType)` takes 4 arguments:
+The `nn.vecLookup(vecin, dontupdatevec, paddingValue, maxNorm, normType)` takes 4 arguments:
 
  * `vecin` : the initialization vectors, it should be a tensor with size (#vocab*#vector).
+ * `dontupdatevec` : whether update vectors during training.
  * `paddingValue` : same with nn.LookupTable.
  * `maxNorm` : same with nn.LookupTable.
  * `normType` : same with nn.LookupTable.
