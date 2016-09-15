@@ -4,7 +4,7 @@ local vecLookup, parent = torch.class('nn.vecLookup', 'nn.Module')
 
 vecLookup.__version = 4
 
-function vecLookup:__init(vecin, paddingValue, maxNorm, normType)
+function vecLookup:__init(vecin, dontupdatevec, paddingValue, maxNorm, normType)
 	parent.__init(self)
 
 	self.weight = vecin
@@ -12,6 +12,7 @@ function vecLookup:__init(vecin, paddingValue, maxNorm, normType)
 	self.paddingValue = paddingValue or 0
 	self.maxNorm = maxNorm or nil
 	self.normType = normType or nil
+	self.updatevec = not dontupdatevec
 end
 
 function vecLookup:backCompatibility()
@@ -93,31 +94,33 @@ function vecLookup:updateGradInput(input, gradOutput)
 end
 
 function vecLookup:accGradParameters(input, gradOutput, scale)
-	self:backCompatibility()
-	input = self.copiedInput and self._input or input
-	if input:dim() == 2 then
-		input = input:view(-1)
-	elseif input:dim() ~= 1 then
-		error("input must be a vector or matrix")
-	end
+	if self.updatevec then
+		self:backCompatibility()
+		input = self.copiedInput and self._input or input
+		if input:dim() == 2 then
+			input = input:view(-1)
+		elseif input:dim() ~= 1 then
+			error("input must be a vector or matrix")
+		end
 
-	if not gradOutput:isContiguous() then
-		self._gradOutput = self._gradOutput or gradOutput.new()
-		self._gradOutput:resizeAs(gradOutput):copy(gradOutput)
-		gradOutput = self._gradOutput
-	end
+		if not gradOutput:isContiguous() then
+			self._gradOutput = self._gradOutput or gradOutput.new()
+			self._gradOutput:resizeAs(gradOutput):copy(gradOutput)
+			gradOutput = self._gradOutput
+		end
 
-	self.gradWeight.THNN.LookupTable_accGradParameters(
-		input:cdata(),
-		gradOutput:cdata(),
-		self.gradWeight:cdata(),
-		self._count:cdata(),
-		THNN.optionalTensor(self._sorted),
-		THNN.optionalTensor(self._indices),
-		self.shouldScaleGradByFreq or false,
-		self.paddingValue or 0,
-		scale or 1
-	)
+		self.gradWeight.THNN.LookupTable_accGradParameters(
+			input:cdata(),
+			gradOutput:cdata(),
+			self.gradWeight:cdata(),
+			self._count:cdata(),
+			THNN.optionalTensor(self._sorted),
+			THNN.optionalTensor(self._indices),
+			self.shouldScaleGradByFreq or false,
+			self.paddingValue or 0,
+			scale or 1
+		)
+	end
 end
 
 function vecLookup:renorm(input)
