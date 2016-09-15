@@ -5,6 +5,7 @@ some extention to torch and nn package
  * [getresmodel](#getresmodel) : Get a residue module;
  * [createlineardecaydpnn](#createlineardecaydpnn) : Get a deep neural network, the number of hidden units decay linearly.
  * [vecLookup](#vecLookup) : LookupTable with initialization matrix;
+ * [maskZerovecLookup](#maskZerovecLookup) : like vecLookup but allows to index 0 which results tensors of 0;
  * [graphmodule](#graphmodule) : generate a module with nngraph, maybe faster;
  * [PartialNN](#PartialNN) : decorater a module to a part forward module;
 
@@ -42,7 +43,18 @@ This function takes 5 arguments:
 <a name='vecLookup'></a>
 ### vecLookup ###
 
-The `nn.vecLookup(vecin, dontupdatevec, paddingValue, maxNorm, normType)` takes 4 arguments:
+The `nn.vecLookup(vecin, dontupdatevec, paddingValue, maxNorm, normType)` takes 5 arguments:
+
+ * `vecin` : the initialization vectors, it should be a tensor with size (#vocab*#vector).
+ * `dontupdatevec` : whether update vectors during training.
+ * `paddingValue` : same with nn.LookupTable.
+ * `maxNorm` : same with nn.LookupTable.
+ * `normType` : same with nn.LookupTable.
+
+<a name='maskZerovecLookup'></a>
+### maskZerovecLookup ###
+
+The `nn.maskZerovecLookup(vecin, dontupdatevec, paddingValue, maxNorm, normType)` takes 5 arguments:
 
  * `vecin` : the initialization vectors, it should be a tensor with size (#vocab*#vector).
  * `dontupdatevec` : whether update vectors during training.
