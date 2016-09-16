@@ -8,6 +8,7 @@ some extention to torch and nn package
  * [maskZerovecLookup](#maskZerovecLookup) : like vecLookup but allows to index 0 which results tensors of 0;
  * [graphmodule](#graphmodule) : generate a module with nngraph, maybe faster;
  * [PartialNN](#PartialNN) : decorater a module to a part forward module;
+ * [SwapTable](#SwapTable) : exchange inner table and outer table({{1,2,3},{4,5,6}}<=>{{1,4},{2,5},{3,6}});
 
 <a name='getmaxout'></a>
 ### [maxoutmodule] getmaxout(inputsize,outputsize,nlinear) ###
@@ -76,3 +77,8 @@ The `nn.PartialNN(module, nForward)` was expected to decorate the activation fun
 
  * `module` : the module process the input data.
  * `nForward` : size of the input which was processed by `module`.
+
+<a name='SwapTable'></a>
+### SwapTable ###
+
+The `nn.SwapTable()` was expected to exchange inner table and outer table, for example, transform {{1,2,3},{4,5,6}} with {{1,4},{2,5},{3,6}}, It takes no arguments.
