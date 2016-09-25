@@ -7,5 +7,9 @@ function getgcnn(ncomb,vecsize,inputdim)
 	local ugate=nn.SoftMax()(nn.Linear((ncomb+1)*vecsize,(ncomb+1)*vecsize)(wc)):annotate{name="update gate",description="update gates"}
 	local www=nn.CMulTable()({ugate,wc}):annotate{name="www",description="apply update gates"}
 	local wrs=nn.CAddTable()(nn.SplitTable(3,3)(nn.Reshape(vecsize,(ncomb+1),true)(www))):annotate{name="word vector",description="get word vector"}
-	return nn.Sequential():add(nn.JoinTable(inputdim,inputdim)):add(nn.Bottle(nn.gModule({input},{wrs})))
+	if inputdim>2 then
+		return nn.Sequential():add(nn.JoinTable(inputdim,inputdim)):add(nn.Bottle(nn.gModule({input},{wrs})))
+	else
+		return nn.Sequential():add(nn.JoinTable(inputdim,inputdim)):add(nn.gModule({input},{wrs}))
+	end
 end
