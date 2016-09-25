@@ -9,6 +9,7 @@ some extention to torch and nn package
  * [graphmodule](#graphmodule) : generate a module with nngraph, maybe faster;
  * [PartialNN](#PartialNN) : decorater a module to a part forward module;
  * [SwapTable](#SwapTable) : exchange inner table and outer table({{1,2,3},{4,5,6}}<=>{{1,4},{2,5},{3,6}});
+ * [getgcnn](#getgcnn) : Get a Gated Combination Neural Network;
 
 <a name='getmaxout'></a>
 ### [maxoutmodule] getmaxout(inputsize,outputsize,nlinear) ###
@@ -82,3 +83,12 @@ The `nn.PartialNN(module, nForward)` was expected to decorate the activation fun
 ### SwapTable ###
 
 The `nn.SwapTable()` was expected to exchange inner table and outer table, for example, transform {{1,2,3},{4,5,6}} with {{1,4},{2,5},{3,6}}, It takes no arguments.
+
+<a name='getgcnn'></a>
+### [gcnn] getgcnn(ncombine,vecsize,inputdim) ###
+Create a Gated Combination Neural Network with this function. It need nngraph.
+
+This function takes 3 arguments:
+ * `ncombine` : the number of input will be combined into the result embedding.
+ * `vecsize` : the size of the input and output vector.
+ * `inputdim` : the size of the input data.
