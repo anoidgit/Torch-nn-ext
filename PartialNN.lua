@@ -7,41 +7,32 @@ function PartialNN:__init(module,nForward)
 end
 
 function PartialNN:updateOutput(input)
-	self.input = input or self.input
-	local ndim = self.input:nDimension()
-	self.output = self.input:clone()
-	self.output:narrow(ndim,1,self.nForward):copy(self.module:updateOutput(self.input:narrow(ndim,1,self.nForward)))
+	local ndim = input:nDimension()
+	self.output = input:clone()
+	self.output:narrow(ndim,1,self.nForward):copy(self.module:updateOutput(input:narrow(ndim,1,self.nForward)))
 	return self.output
 end
 
 function PartialNN:updateGradInput(input, gradOutput)
-	self.input = input or self.input
-	self.gradOutput = gradOutput or self.gradOutput
-	local ndim = self.gradOutput:nDimension()
-	self.gradInput = self.gradOutput:clone()
-	self.gradInput:narrow(ndim,1,self.nForward):copy(self.module:updateGradInput(self.input:narrow(ndim,1,self.nForward),self.gradOutput:narrow(ndim,1,self.nForward)))
+	local ndim = gradOutput:nDimension()
+	self.gradInput = gradOutput:clone()
+	self.gradInput:narrow(ndim,1,self.nForward):copy(self.module:updateGradInput(input:narrow(ndim,1,self.nForward),gradOutput:narrow(ndim,1,self.nForward)))
 	return self.gradInput
 end
 
 function PartialNN:accGradParameters(input, gradOutput, scale)
-	self.input = input or self.input
-	self.gradOutput = gradOutput or self.gradOutput
-	local ndim = self.gradOutput:nDimension()
-	self.module:accGradParameters(self.input:narrow(ndim,1,self.nForward), self.gradOutput:narrow(ndim,1,self.nForward), scale)
+	local ndim = gradOutput:nDimension()
+	self.module:accGradParameters(input:narrow(ndim,1,self.nForward), gradOutput:narrow(ndim,1,self.nForward), scale)
 end
 
 function PartialNN:accUpdateGradParameters(input, gradOutput, lr)
-	self.input = input or self.input
-	self.gradOutput = gradOutput or self.gradOutput
-	local ndim = self.gradOutput:nDimension()
-	self.module:accUpdateGradParameters(self.input:narrow(ndim,1,self.nForward), self.gradOutput:narrow(ndim,1,self.nForward), lr)
+	local ndim = gradOutput:nDimension()
+	self.module:accUpdateGradParameters(input:narrow(ndim,1,self.nForward), gradOutput:narrow(ndim,1,self.nForward), lr)
 end
 
 function PartialNN:sharedAccUpdateGradParameters(input, gradOutput, lr)
-	self.input = input or self.input
-	self.gradOutput = gradOutput or self.gradOutput
-	local ndim = self.gradOutput:nDimension()
-	self.module:sharedAccUpdateGradParameters(self.input:narrow(ndim,1,self.nForward), self.gradOutput:narrow(ndim,1,self.nForward), lr)
+	local ndim = gradOutput:nDimension()
+	self.module:sharedAccUpdateGradParameters(input:narrow(ndim,1,self.nForward), gradOutput:narrow(ndim,1,self.nForward), lr)
 end
 
 function PartialNN:__tostring__()
