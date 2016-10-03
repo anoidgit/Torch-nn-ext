@@ -10,6 +10,7 @@ some extention to torch and nn package
  * [PartialNN](#PartialNN) : decorater a module to a part forward module;
  * [SwapTable](#SwapTable) : exchange inner table and outer table({{1,2,3},{4,5,6}}<=>{{1,4},{2,5},{3,6}});
  * [getgcnn](#getgcnn) : Get a Gated Combination Neural Network;
+ * [SeqDropout](#nn.SeqDropout) : Dropout for SeqLSTM, SeqGRU and SeqBRNN;
 
 <a name='getmaxout'></a>
 ### [maxoutmodule] getmaxout(inputsize,outputsize,nlinear) ###
@@ -92,3 +93,8 @@ This function takes 3 arguments:
  * `ncombine` : the number of input will be combined into the result embedding.
  * `vecsize` : the size of the input and output vector.
  * `inputdim` : the size of the input data.
+
+<a name='nn.SeqDropout'></a>
+### SeqDropout ###
+
+A Dropout Module changed from nn.Dropout(https://github.com/torch/nn), used for SeqLSTM, SeqGRU and SeqBRNN of rnn(https://github.com/Element-Research/rnn), the whole sequence will share the same mask which is different from nn.Dropout. The input of this module should be ```seqlen x batchsize x inputsize```.
