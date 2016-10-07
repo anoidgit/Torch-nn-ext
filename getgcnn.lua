@@ -39,7 +39,7 @@ function graphgcnn(ncomb,vecsize)
 	local ugate=nn.SoftMax()(nn.Linear((ncomb+1)*vecsize,(ncomb+1)*vecsize)(wc)):annotate{name="update gate",description="update gates"}
 	local www=nn.CMulTable()({ugate,wc}):annotate{name="www",description="apply update gates"}
 	local wrs=nn.CAddTable()(nn.SplitTable(3,3)(nn.Reshape(vecsize,(ncomb+1),true)(www))):annotate{name="word vector",description="get word vector"}
-	return nn.gModule({input},{wrs})))
+	return nn.gModule({input},{wrs})
 end
 
 function getgcnn(ncomb,vecsize,inputdim,usegraph)
@@ -49,8 +49,8 @@ function getgcnn(ncomb,vecsize,inputdim,usegraph)
 		nncoremod=containergcnn(ncomb,vecsize)
 	end
 	if inputdim>2 then
-		return nn.Sequential():add(nn.JoinTable(inputdim,inputdim)):add(nn.Bottle(nnmodcore))
+		return nn.Sequential():add(nn.JoinTable(inputdim,inputdim)):add(nn.Bottle(nncoremod))
 	else
-		return nn.Sequential():add(nn.JoinTable(inputdim,inputdim)):add(nnmodcore)
+		return nn.Sequential():add(nn.JoinTable(inputdim,inputdim)):add(nncoremod)
 	end
 end
