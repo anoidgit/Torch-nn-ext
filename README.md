@@ -86,13 +86,14 @@ The `nn.PartialNN(module, nForward)` was expected to decorate the activation fun
 The `nn.SwapTable()` was expected to exchange inner table and outer table, for example, transform {{1,2,3},{4,5,6}} with {{1,4},{2,5},{3,6}}, It takes no arguments.
 
 <a name='getgcnn'></a>
-### [gcnn] getgcnn(ncombine,vecsize,inputdim) ###
+### [gcnn] getgcnn(ncombine,vecsize,inputdim,usegraph) ###
 Create a Gated Combination Neural Network with this function. It need nngraph.
 
-This function takes 3 arguments:
+This function takes 4 arguments:
  * `ncombine` : the number of input will be combined into the result embedding.
  * `vecsize` : the size of the input and output vector.
  * `inputdim` : the size of the input data.
+ * `usegraph` : whether use nngraph implementation, if `true`, need `nngraph`(https://github.com/torch/nngraph).
 
 <a name='nn.SeqDropout'></a>
 ### SeqDropout ###
