@@ -21,12 +21,12 @@ dependencies = {
 }
 
 build = {
-	type = "command",
-	build_command = [[
-cmake -E make_directory build;
-cd build;
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$(LUA_BINDIR)/.." -DCMAKE_INSTALL_PREFIX="$(PREFIX)"; 
-$(MAKE)
-	]],
-	install_command = "cd build && $(MAKE) install"
+	type = "builtin",
+	PartialNN = "PartialNN.lua"
+	SeqDropout = "SeqDropout.lua"
+	getgcnn = "getgcnn.lua"
+	getmaxout = "getmaxout.lua"
+	getresmodel = "getresmodel.lua"
+	vecLookup = "vecLookup.lua"
+	maskZerovecLookup = "maskZerovecLookup.lua"
 }
