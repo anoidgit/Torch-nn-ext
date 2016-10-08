@@ -22,11 +22,13 @@ dependencies = {
 
 build = {
 	type = "builtin",
-	PartialNN = "PartialNN.lua"
-	SeqDropout = "SeqDropout.lua"
-	getgcnn = "getgcnn.lua"
-	getmaxout = "getmaxout.lua"
-	getresmodel = "getresmodel.lua"
-	vecLookup = "vecLookup.lua"
-	maskZerovecLookup = "maskZerovecLookup.lua"
+	modules = {
+		PartialNN = "PartialNN.lua",
+		SeqDropout = "SeqDropout.lua",
+		getgcnn = "getgcnn.lua",
+		getmaxout = "getmaxout.lua",
+		getresmodel = "getresmodel.lua",
+		vecLookup = "vecLookup.lua",
+		maskZerovecLookup = "maskZerovecLookup.lua"
+	}
 }
