@@ -1,4 +1,3 @@
-require "nn"
 local THNN = require 'nn.THNN'
 local vecLookup, parent = torch.class('nn.vecLookup', 'nn.Module')
 
@@ -81,7 +80,7 @@ function vecLookup:updateOutput(input)
 end
 
 function vecLookup:updateGradInput(input, gradOutput)
-	-- the input can be of any type (as in the forward it's 
+	-- the input can be of any type (as in the forward it's
 	-- converted anyway to LongTensor) thus, need to allocate
 	-- new memory each time the user changes the input type
 	if torch.type(self.gradInput) ~= torch.type(input) then
@@ -94,40 +93,38 @@ function vecLookup:updateGradInput(input, gradOutput)
 end
 
 function vecLookup:accGradParameters(input, gradOutput, scale)
-	if self.updatevec then
-		self:backCompatibility()
-		input = self.copiedInput and self._input or input
-		if input:dim() == 2 then
-			input = input:view(-1)
-		elseif input:dim() ~= 1 then
-			error("input must be a vector or matrix")
-		end
-
-		if not gradOutput:isContiguous() then
-			self._gradOutput = self._gradOutput or gradOutput.new()
-			self._gradOutput:resizeAs(gradOutput):copy(gradOutput)
-			gradOutput = self._gradOutput
-		end
-
-		self.gradWeight.THNN.LookupTable_accGradParameters(
-			input:cdata(),
-			gradOutput:cdata(),
-			self.gradWeight:cdata(),
-			self._count:cdata(),
-			THNN.optionalTensor(self._sorted),
-			THNN.optionalTensor(self._indices),
-			self.shouldScaleGradByFreq or false,
-			self.paddingValue or 0,
-			scale or 1
-		)
+	self:backCompatibility()
+	input = self.copiedInput and self._input or input
+	if input:dim() == 2 then
+		input = input:view(-1)
+	elseif input:dim() ~= 1 then
+		error("input must be a vector or matrix")
 	end
+
+	if not gradOutput:isContiguous() then
+		self._gradOutput = self._gradOutput or gradOutput.new()
+		self._gradOutput:resizeAs(gradOutput):copy(gradOutput)
+		gradOutput = self._gradOutput
+	end
+
+	self.gradWeight.THNN.LookupTable_accGradParameters(
+		input:cdata(),
+		gradOutput:cdata(),
+		self.gradWeight:cdata(),
+		self._count:cdata(),
+		THNN.optionalTensor(self._sorted),
+		THNN.optionalTensor(self._indices),
+		self.shouldScaleGradByFreq or false,
+		self.paddingValue or 0,
+		scale or 1
+	)
 end
 
 function vecLookup:renorm(input)
 	if not self.maxNorm then
 		return
 	end
-	-- copy input into _input, so _input is continous.
+	-- copy input into _input, so _input is continuous.
 	-- The copied _input will be modified in the C code.
 	self._input:resize(input:size()):copy(input)
 	local row_idx = self._input
@@ -145,31 +142,15 @@ function vecLookup:renorm(input)
 	)
 end
 
-function vecLookup:maxParamNorm(maxOutNorm, maxInNorm)
-   maxOutNorm = self.maxOutNorm or maxOutNorm or self.maxInNorm or maxInNorm
-   if not (maxOutNorm or maxInNorm) then
-      return
-   end
-   
-   if maxOutNorm and maxOutNorm > 0 then
-      -- cols feed into output neurons 
-      self.weight:renorm(2, 2, maxOutNorm)
-   end
-   if maxInNorm and maxInNorm > 0 then
-      -- rows feed out from input neurons
-      self.weight:renorm(2, 1, maxInNorm)
-   end
-end
-
 function vecLookup:type(type, tensorCache)
 	parent.type(self, type, tensorCache)
 
 	if type == 'torch.CudaTensor' then
 		-- CUDA uses _sorted and _indices temporary tensors
-		self._sorted = self.weight.new()
-		self._indices = self.weight.new()
-		self._count = self.weight.new()
-		self._input = self.weight.new()
+		self._sorted = torch.CudaLongTensor and torch.CudaLongTensor.new() or torch.CudaTensor.new()
+		self._indices = torch.CudaLongTensor and torch.CudaLongTensor.new() or torch.CudaTensor.new()
+		self._count = torch.CudaLongTensor and torch.CudaLongTensor.new() or torch.CudaTensor.new()
+		self._input = torch.CudaLongTensor and torch.CudaLongTensor.new() or torch.CudaTensor.new()
 	else
 		-- self._count and self._input should only be converted if using Cuda
 		self._count = torch.IntTensor()
@@ -182,6 +163,22 @@ end
 function vecLookup:clearState()
 	nn.utils.clear(self, '_count', '_input', '_gradOutput')
 	return parent.clearState(self)
+end
+
+function vecLookup:maxParamNorm(maxOutNorm, maxInNorm)
+	maxOutNorm = self.maxOutNorm or maxOutNorm or self.maxInNorm or maxInNorm
+	if not (maxOutNorm or maxInNorm) then
+		return
+	end
+	
+	if maxOutNorm and maxOutNorm > 0 then
+		-- cols feed into output neurons 
+		self.weight:renorm(2, 2, maxOutNorm)
+	end
+	if maxInNorm and maxInNorm > 0 then
+		-- rows feed out from input neurons
+		self.weight:renorm(2, 1, maxInNorm)
+	end
 end
 
 -- we do not need to accumulate parameters when sharing
