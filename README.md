@@ -6,10 +6,11 @@ some extention to torch and nn package
  * [createlineardecaydpnn](#createlineardecaydpnn) : Get a deep neural network, the number of hidden units decay linearly.
  * [vecLookup](#vecLookup) : LookupTable with initialization matrix;
  * [maskZerovecLookup](#maskZerovecLookup) : like vecLookup but allows to index 0 which results tensors of 0;
- * [graphmodule](#graphmodule) : generate a module with nngraph, maybe faster;
+ * [graphmodule](#graphmodule) : generate a module with nngraph;
  * [PartialNN](#PartialNN) : decorater a module to a part forward module;
  * [SwapTable](#SwapTable) : exchange inner table and outer table({{1,2,3},{4,5,6}}<=>{{1,4},{2,5},{3,6}});
  * [getgcnn](#getgcnn) : Get a Gated Combination Neural Network;
+ * [getrcnn](#getrcnn) : Get a Recurrent Combination Neural Network;
  * [SeqDropout](#nn.SeqDropout) : Dropout for SeqLSTM, SeqGRU and SeqBRNN;
 
 <a name='getmaxout'></a>
@@ -95,6 +96,14 @@ This function takes 4 arguments:
  * `inputdim` : the size of the input data.
  * `usegraph` : whether use nngraph implementation, if `true`, need `nngraph`(https://github.com/torch/nngraph).
 
+<a name='getrcnn'></a>
+### [rcnn] getrcnn(vecsize,stdbuild) ###
+Create a Recurrent Combination Neural Network with this function. It need nngraph.
+
+This function takes 2 arguments:
+ * `vecsize` : the size of the input and output vector.
+ * `stdbuild` : apply softmax on the first dimension or not.
+ 
 <a name='nn.SeqDropout'></a>
 ### SeqDropout ###
 
